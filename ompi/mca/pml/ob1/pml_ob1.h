@@ -94,6 +94,8 @@ typedef struct mca_pml_ob1_t mca_pml_ob1_t;
 extern mca_pml_ob1_t mca_pml_ob1;
 extern int mca_pml_ob1_output;
 extern bool mca_pml_ob1_matching_protection;
+OMPI_DECLSPEC extern opal_free_list_t mca_pml_ob1_send_requests;
+OMPI_DECLSPEC extern opal_free_list_t mca_pml_ob1_recv_requests;
 /*
  * PML interface functions.
  */

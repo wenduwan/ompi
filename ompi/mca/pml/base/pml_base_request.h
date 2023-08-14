@@ -44,6 +44,9 @@ BEGIN_C_DECLS
 OMPI_DECLSPEC extern opal_free_list_t mca_pml_base_send_requests;
 OMPI_DECLSPEC extern opal_free_list_t mca_pml_base_recv_requests;
 
+OMPI_DECLSPEC extern opal_free_list_t mca_pml_ob1_send_requests;
+OMPI_DECLSPEC extern opal_free_list_t mca_pml_ob1_recv_requests;
+
 /**
  * Type of request.
  */

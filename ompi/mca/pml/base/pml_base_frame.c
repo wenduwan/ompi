@@ -192,6 +192,9 @@ static int mca_pml_base_close(void)
     OBJ_DESTRUCT(&mca_pml_base_send_requests);
     OBJ_DESTRUCT(&mca_pml_base_recv_requests);
 
+    OBJ_DESTRUCT(&mca_pml_ob1_send_requests);
+    OBJ_DESTRUCT(&mca_pml_ob1_recv_requests);
+
     mca_pml.pml_progress = mca_pml_base_progress;
 
     /* Free all the strings in the array */
@@ -222,6 +225,9 @@ static int mca_pml_base_open(mca_base_open_flag_t flags)
      */
     OBJ_CONSTRUCT(&mca_pml_base_send_requests, opal_free_list_t);
     OBJ_CONSTRUCT(&mca_pml_base_recv_requests, opal_free_list_t);
+
+    OBJ_CONSTRUCT(&mca_pml_ob1_send_requests, opal_free_list_t);
+    OBJ_CONSTRUCT(&mca_pml_ob1_recv_requests, opal_free_list_t);
 
     OBJ_CONSTRUCT(&mca_pml_base_pml, opal_pointer_array_t);
 
@@ -261,6 +267,7 @@ static int mca_pml_base_open(mca_base_open_flag_t flags)
             opal_pointer_array_add(&mca_pml_base_pml, strdup("ob1"));
             opal_pointer_array_add(&mca_pml_base_pml, strdup("ucx"));
             opal_pointer_array_add(&mca_pml_base_pml, strdup("cm"));
+            opal_pointer_array_add(&mca_pml_base_pml, strdup("topo"));
         } else {
 #if OPAL_ENABLE_DEBUG
             char **req_pml = opal_argv_split(default_pml[0], ',');

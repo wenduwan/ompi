@@ -189,7 +189,11 @@ int mca_pml_base_select(bool enable_progress_threads,
          item = opal_list_remove_first(&opened)) {
         om = (opened_component_t *) item;
 
-        if (om->om_component != best_component ) {
+        if (om->om_component != best_component
+            && strncmp(om->om_component->pmlm_version.mca_component_name, "ob1",
+                       strlen(om->om_component->pmlm_version.mca_component_name))
+            && strncmp(om->om_component->pmlm_version.mca_component_name, "cm",
+                       strlen(om->om_component->pmlm_version.mca_component_name))) {
             /* Finalize */
 
             if (NULL != om->om_component->pmlm_finalize) {
@@ -213,9 +217,20 @@ int mca_pml_base_select(bool enable_progress_threads,
        available list all unselected components.  The available list will
        contain only the selected component. */
 
-    mca_base_components_close(ompi_pml_base_framework.framework_output,
-                              &ompi_pml_base_framework.framework_components,
-                              (mca_base_component_t *) best_component);
+    // mca_base_components_close(ompi_pml_base_framework.framework_output,
+    //                           &ompi_pml_base_framework.framework_components,
+    //                           (mca_base_component_t *) best_component);
+
+    OPAL_LIST_FOREACH (cli, &ompi_pml_base_framework.framework_components, mca_base_component_list_item_t) {
+        component = (mca_pml_base_component_t *) cli->cli_component;
+        if (component != best_component
+            && strncmp(om->om_component->pmlm_version.mca_component_name, "ob1",
+                       strlen(om->om_component->pmlm_version.mca_component_name))
+            && strncmp(om->om_component->pmlm_version.mca_component_name, "cm",
+                       strlen(om->om_component->pmlm_version.mca_component_name))) {
+            mca_base_component_close(component, ompi_pml_base_framework.framework_output);
+        }
+    }
 
     /* register the winner's callback */
     if( NULL != mca_pml.pml_progress ) {

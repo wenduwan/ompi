@@ -130,7 +130,7 @@ get_request_from_send_pending(mca_pml_ob1_send_pending_t *type)
                                                                         \
         if( OPAL_LIKELY(NULL != proc) ) {                               \
             sendreq = (mca_pml_ob1_send_request_t*)                     \
-                opal_free_list_wait (&mca_pml_base_send_requests);      \
+                opal_free_list_wait (&mca_pml_ob1_send_requests);      \
             sendreq->req_send.req_base.req_proc = proc;                 \
         }                                                               \
     }
@@ -159,6 +159,7 @@ get_request_from_send_pending(mca_pml_ob1_send_pending_t *type)
                                        0); /* convertor_flags */        \
         (sendreq)->req_recv.pval = NULL;                                \
         (sendreq)->ob1_proc = ob1_proc;                                 \
+        (sendreq)->req_rdma_cnt = 0;                                    \
     }
 
 #define MCA_PML_OB1_SEND_REQUEST_RESET(sendreq)                         \
@@ -241,7 +242,7 @@ static inline void mca_pml_ob1_send_request_fini (mca_pml_ob1_send_request_t *se
 #define MCA_PML_OB1_SEND_REQUEST_RETURN(sendreq)                        \
     do {                                                                \
         mca_pml_ob1_send_request_fini (sendreq);                        \
-        opal_free_list_return ( &mca_pml_base_send_requests,            \
+        opal_free_list_return ( &mca_pml_ob1_send_requests,            \
                                 (opal_free_list_item_t*)sendreq);       \
         sendreq = NULL;  /* for safety */                               \
     } while(0)

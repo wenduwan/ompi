@@ -175,7 +175,7 @@ int mca_pml_ob1_enable(bool enable)
      * should get ownership for the send and receive requests list, and
      * initialize them with the size of our own requests.
      */
-    opal_free_list_init ( &mca_pml_base_send_requests,
+    opal_free_list_init ( &mca_pml_ob1_send_requests,
                           sizeof(mca_pml_ob1_send_request_t) +
                           sizeof(mca_pml_ob1_com_btl_t[mca_pml_ob1.max_rdma_per_request]),
                           opal_cache_line_size,
@@ -186,7 +186,7 @@ int mca_pml_ob1_enable(bool enable)
                           mca_pml_ob1.free_list_inc,
                           NULL, 0, NULL, NULL, NULL);
 
-    opal_free_list_init ( &mca_pml_base_recv_requests,
+    opal_free_list_init ( &mca_pml_ob1_recv_requests,
                           sizeof(mca_pml_ob1_recv_request_t) +
                           sizeof(mca_pml_ob1_com_btl_t[mca_pml_ob1.max_rdma_per_request]),
                           opal_cache_line_size,
@@ -388,11 +388,11 @@ int mca_pml_ob1_add_procs(ompi_proc_t** procs, size_t nprocs)
         return rc;
 
     /* make sure remote procs are using the same PML as us */
-    if (OMPI_SUCCESS != (rc = mca_pml_base_pml_check_selected("ob1",
-                                                              procs,
-                                                              nprocs))) {
-        return rc;
-    }
+    // if (OMPI_SUCCESS != (rc = mca_pml_base_pml_check_selected("ob1",
+    //                                                           procs,
+    //                                                           nprocs))) {
+    //     return rc;
+    // }
 
     OBJ_CONSTRUCT(&reachable, opal_bitmap_t);
     rc = opal_bitmap_init(&reachable, (int)nprocs);
