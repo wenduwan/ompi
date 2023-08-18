@@ -128,6 +128,8 @@ int mca_coll_han_comm_create_new(struct ompi_communicator_t *comm,
         goto return_with_error;
     }
 
+    (*low_comm)->c_flags &= ~OMPI_COMM_DISJOINT;
+
     /*
      * Get my local rank and the local size
      */
@@ -144,6 +146,8 @@ int mca_coll_han_comm_create_new(struct ompi_communicator_t *comm,
         /* cannot create subcommunicators. Return the error upstream */
         goto return_with_error;
     }
+
+    (*up_comm)->c_flags |= OMPI_COMM_DISJOINT;
 
     up_rank = ompi_comm_rank(*up_comm);
 
@@ -283,6 +287,8 @@ int mca_coll_han_comm_create(struct ompi_communicator_t *comm,
     ompi_comm_split_type(comm, MPI_COMM_TYPE_SHARED, 0,
                          &comm_info, &(low_comms[0]));
 
+    low_comms[0]->c_flags &= ~OMPI_COMM_DISJOINT;
+
     /*
      * Get my local rank and the local size
      */
@@ -297,6 +303,8 @@ int mca_coll_han_comm_create(struct ompi_communicator_t *comm,
     ompi_comm_split_type(comm, MPI_COMM_TYPE_SHARED, 0,
                          &comm_info, &(low_comms[1]));
 
+    low_comms[1]->c_flags &= ~OMPI_COMM_DISJOINT;
+
     /*
      * Upgrade libnbc module priority to set up up_comms[0] with libnbc module
      * This sub-communicator contains one process per node: processes with the
@@ -304,6 +312,8 @@ int mca_coll_han_comm_create(struct ompi_communicator_t *comm,
      */
     opal_info_set(&comm_info, "ompi_comm_coll_preference", "libnbc,^han");
     ompi_comm_split_with_info(comm, low_rank, w_rank, &comm_info, &(up_comms[0]), false);
+
+    up_comms[0]->c_flags |= OMPI_COMM_DISJOINT;
 
     up_rank = ompi_comm_rank(up_comms[0]);
 
@@ -313,6 +323,8 @@ int mca_coll_han_comm_create(struct ompi_communicator_t *comm,
      */
     opal_info_set(&comm_info, "ompi_comm_coll_preference", "adapt,^han");
     ompi_comm_split_with_info(comm, low_rank, w_rank, &comm_info, &(up_comms[1]), false);
+
+    up_comms[1]->c_flags |= OMPI_COMM_DISJOINT;
 
     /*
      * Set my virtual rank number.
