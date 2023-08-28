@@ -563,7 +563,9 @@ int ompi_coll_tuned_bcast_intra_dec_fixed(void *buff, int count,
      *  {9, "scatter_allgather_ring"},
      */
     if (communicator_size < 4) {
-        if (total_dsize < 32) {
+        if (OMPI_COMM_IS_DISJOINT(comm) && total_dsize < 1024) {
+            alg = 1;
+        } else if (total_dsize < 32) {
             alg = 3;
         } else if (total_dsize < 256) {
             alg = 5;
@@ -585,7 +587,9 @@ int ompi_coll_tuned_bcast_intra_dec_fixed(void *buff, int count,
             alg = 5;
         }
     } else if (communicator_size < 8) {
-        if (total_dsize < 64) {
+        if (OMPI_COMM_IS_DISJOINT(comm) && total_dsize < 1024) {
+            alg = 1;
+        } else if (total_dsize < 64) {
             alg = 5;
         } else if (total_dsize < 128) {
             alg = 6;
@@ -599,7 +603,9 @@ int ompi_coll_tuned_bcast_intra_dec_fixed(void *buff, int count,
             alg = 2;
         }
     } else if (communicator_size < 16) {
-        if (total_dsize < 8) {
+        if (OMPI_COMM_IS_DISJOINT(comm) && total_dsize < 1024) {
+            alg = 1;
+        } else if (total_dsize < 8) {
             alg = 7;
         } else if (total_dsize < 64) {
             alg = 5;
@@ -613,7 +619,9 @@ int ompi_coll_tuned_bcast_intra_dec_fixed(void *buff, int count,
             alg = 1;
         }
     } else if (communicator_size < 32) {
-        if (total_dsize < 4096) {
+        if (OMPI_COMM_IS_DISJOINT(comm) && total_dsize < 1024) {
+            alg = 1;
+        } else if (total_dsize < 4096) {
             alg = 7;
         } else if (total_dsize < 1048576) {
             alg = 6;
