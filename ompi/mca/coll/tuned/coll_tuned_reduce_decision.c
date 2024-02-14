@@ -31,6 +31,13 @@ static int coll_tuned_reduce_segment_size = 0;
 static int coll_tuned_reduce_max_requests;
 static int coll_tuned_reduce_tree_fanout;
 static int coll_tuned_reduce_chain_fanout;
+// default fanout for intranode knomial tree, this is different from
+// coll_tuned_allgather_radix which are used for internode
+// allgather. The values are chosen based allreduce latency
+// results. The optimal choice of radix is likely tied to internode,
+// intranode p2p latencies and how many messages can be scheduled
+// simultaneously
+static int coll_tuned_reduce_knomial_radix = 4;
 
 /* valid values for coll_tuned_reduce_forced_algorithm */
 static const mca_base_var_enum_value_t reduce_algorithms[] = {
@@ -42,6 +49,7 @@ static const mca_base_var_enum_value_t reduce_algorithms[] = {
     {5, "binomial"},
     {6, "in-order_binary"},
     {7, "rabenseifner"},
+    {8, "knomial"},
     {0, NULL}
 };
 
@@ -80,7 +88,7 @@ int ompi_coll_tuned_reduce_intra_check_forced_init (coll_tuned_force_algorithm_m
     mca_param_indices->algorithm_param_index =
         mca_base_component_var_register(&mca_coll_tuned_component.super.collm_version,
                                         "reduce_algorithm",
-                                        "Which reduce algorithm is used. Can be locked down to choice of: 0 ignore, 1 linear, 2 chain, 3 pipeline, 4 binary, 5 binomial, 6 in-order binary, 7 rabenseifner. "
+                                        "Which reduce algorithm is used. Can be locked down to choice of: 0 ignore, 1 linear, 2 chain, 3 pipeline, 4 binary, 5 binomial, 6 in-order binary, 7 rabenseifner, 8 knomial. "
                                         "Only relevant if coll_tuned_use_dynamic_rules is true.",
                                         MCA_BASE_VAR_TYPE_INT, new_enum, 0, MCA_BASE_VAR_FLAG_SETTABLE,
                                         OPAL_INFO_LVL_5,
@@ -120,6 +128,14 @@ int ompi_coll_tuned_reduce_intra_check_forced_init (coll_tuned_force_algorithm_m
                                       OPAL_INFO_LVL_5,
                                       MCA_BASE_VAR_SCOPE_ALL,
                                       &coll_tuned_reduce_chain_fanout);
+
+    mca_base_component_var_register(&mca_coll_tuned_component.super.collm_version,
+                                    "reduce_algorithm_knomial_radix",
+                                    "k-nomial tree radix for the reduce algorithm (radix > 1).",
+                                    MCA_BASE_VAR_TYPE_INT, NULL, 0, MCA_BASE_VAR_FLAG_SETTABLE,
+                                    OPAL_INFO_LVL_5,
+                                    MCA_BASE_VAR_SCOPE_ALL,
+                                    &coll_tuned_reduce_knomial_radix);
 
     coll_tuned_reduce_max_requests = 0; /* no limit for reduce by default */
     mca_param_indices->max_requests_param_index =
@@ -177,6 +193,10 @@ int ompi_coll_tuned_reduce_intra_do_this(const void *sbuf, void* rbuf, int count
                                                                   segsize, max_requests);
     case (7):  return ompi_coll_base_reduce_intra_redscat_gather(sbuf, rbuf, count, dtype,
                                                                   op, root, comm, module);
+    case (8):  return ompi_coll_base_reduce_intra_knomial(sbuf, rbuf, count, dtype,
+                                                          op, root, comm, module,
+                                                          segsize, max_requests,
+                                                          coll_tuned_reduce_knomial_radix);
     } /* switch */
     OPAL_OUTPUT((ompi_coll_tuned_stream,"coll:tuned:reduce_intra_do_this attempt to select algorithm %d when only 0-%d is valid?",
                  algorithm, ompi_coll_tuned_forced_max_algorithms[REDUCE]));
