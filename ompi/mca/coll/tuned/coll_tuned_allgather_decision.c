@@ -30,6 +30,7 @@ static int coll_tuned_allgather_forced_algorithm = 0;
 static int coll_tuned_allgather_segment_size = 0;
 static int coll_tuned_allgather_tree_fanout;
 static int coll_tuned_allgather_chain_fanout;
+static int coll_tuned_allgather_radix = 16;
 
 /* valid values for coll_tuned_allgather_forced_algorithm */
 static const mca_base_var_enum_value_t allgather_algorithms[] = {
@@ -41,6 +42,8 @@ static const mca_base_var_enum_value_t allgather_algorithms[] = {
     {5, "neighbor"},
     {6, "two_proc"},
     {7, "sparbit"},
+    {8, "bruck-k-fanout"},
+    {9, "direct-messaging"},
     {0, NULL}
 };
 
@@ -79,7 +82,7 @@ ompi_coll_tuned_allgather_intra_check_forced_init(coll_tuned_force_algorithm_mca
     mca_param_indices->algorithm_param_index =
         mca_base_component_var_register(&mca_coll_tuned_component.super.collm_version,
                                         "allgather_algorithm",
-                                        "Which allgather algorithm is used. Can be locked down to choice of: 0 ignore, 1 basic linear, 2 bruck, 3 recursive doubling, 4 ring, 5 neighbor exchange, 6: two proc only, 7: sparbit. "
+                                        "Which allgather algorithm is used. Can be locked down to choice of: 0 ignore, 1 basic linear, 2 bruck, 3 recursive doubling, 4 ring, 5 neighbor exchange, 6: two proc only, 7: sparbit, 8: bruck with radix k, 9: direct messaging. "
                                         "Only relevant if coll_tuned_use_dynamic_rules is true.",
                                         MCA_BASE_VAR_TYPE_INT, new_enum, 0, MCA_BASE_VAR_FLAG_SETTABLE,
                                         OPAL_INFO_LVL_5,
@@ -119,6 +122,16 @@ ompi_coll_tuned_allgather_intra_check_forced_init(coll_tuned_force_algorithm_mca
                                       OPAL_INFO_LVL_5,
                                       MCA_BASE_VAR_SCOPE_ALL,
                                       &coll_tuned_allgather_chain_fanout);
+
+    coll_tuned_allgather_radix = 16; /* get system wide default */
+    mca_param_indices->chain_fanout_param_index =
+      mca_base_component_var_register(&mca_coll_tuned_component.super.collm_version,
+                                      "allgather_algorithm_radix",
+                                      "Fanout used for allgather bruck algorithm. Each communication phase, each rank will send messages to and receive messages from up to radix-1 other ranks",
+                                      MCA_BASE_VAR_TYPE_INT, NULL, 0, MCA_BASE_VAR_FLAG_SETTABLE,
+                                      OPAL_INFO_LVL_5,
+                                      MCA_BASE_VAR_SCOPE_ALL,
+                                      &coll_tuned_allgather_radix);
 
     return (MPI_SUCCESS);
 }
@@ -168,6 +181,15 @@ int ompi_coll_tuned_allgather_intra_do_this(const void *sbuf, int scount,
         return ompi_coll_base_allgather_intra_sparbit(sbuf, scount, sdtype,
                                                         rbuf, rcount, rdtype,
                                                         comm, module);
+    case (8):
+        return ompi_coll_base_allgather_intra_k_bruck(sbuf, scount, sdtype,
+                                                        rbuf, rcount, rdtype,
+                                                        comm, module, coll_tuned_allgather_radix);
+
+    case (9):
+        return ompi_coll_base_allgather_direct_messaging(sbuf, scount, sdtype,
+                                                         rbuf, rcount, rdtype,
+                                                         comm, module);
     } /* switch */
     OPAL_OUTPUT((ompi_coll_tuned_stream,
                  "coll:tuned:allgather_intra_do_this attempt to select algorithm %d when only 0-%d is valid?",
