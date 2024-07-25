@@ -302,7 +302,7 @@ int ompi_coll_base_alltoall_intra_bruck(const void *sbuf, size_t scount,
         sendto = (rank + distance) % size;
         recvfrom = (rank - distance + size) % size;
 
-        new_ddt = ompi_datatype_create((1 + size/distance) * (2 + rdtype->super.desc.used));
+        new_ddt = ompi_datatype_create((1 + (size_t) (size/distance)) * (2 + rdtype->super.desc.used));
 
         /* Create datatype describing data sent/received */
         for (i = distance; i < size; i += 2*distance) {

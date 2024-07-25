@@ -107,7 +107,7 @@ opal_datatype_t *opal_datatype_create(int32_t expectedSize)
     return datatype;
 }
 
-int32_t opal_datatype_create_desc(opal_datatype_t *datatype, int32_t expectedSize)
+int32_t opal_datatype_create_desc(opal_datatype_t *datatype, size_t expectedSize)
 {
     if (expectedSize == -1) {
         expectedSize = DT_INCREASE_STACK;

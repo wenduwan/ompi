@@ -195,7 +195,7 @@ OPAL_DECLSPEC extern const opal_datatype_t opal_datatype_unsigned_long;
 int opal_datatype_register_params(void);
 OPAL_DECLSPEC int32_t opal_datatype_init(void);
 OPAL_DECLSPEC opal_datatype_t *opal_datatype_create(int32_t expectedSize);
-OPAL_DECLSPEC int32_t opal_datatype_create_desc(opal_datatype_t *datatype, int32_t expectedSize);
+OPAL_DECLSPEC int32_t opal_datatype_create_desc(opal_datatype_t *datatype, size_t expectedSize);
 OPAL_DECLSPEC int32_t opal_datatype_commit(opal_datatype_t *pData);
 OPAL_DECLSPEC int32_t opal_datatype_destroy(opal_datatype_t **);
 OPAL_DECLSPEC int32_t opal_datatype_is_monotonic(opal_datatype_t *type);
@@ -225,7 +225,7 @@ static inline int32_t opal_datatype_is_predefined(const opal_datatype_t *type)
  * is contiguous in the memory. And false (0) otherwise.
  */
 static inline int32_t opal_datatype_is_contiguous_memory_layout(const opal_datatype_t *datatype,
-                                                                int32_t count)
+                                                                size_t count)
 {
     if (!(datatype->flags & OPAL_DATATYPE_FLAG_CONTIGUOUS))
         return 0;
