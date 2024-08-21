@@ -23,6 +23,7 @@
 #include "opal_config.h"
 
 #include <stddef.h>
+#include <stdio.h>
 
 #include "limits.h"
 #include "opal/constants.h"
@@ -73,6 +74,7 @@ static void opal_datatype_destruct(opal_datatype_t *datatype)
     }
     if (!opal_datatype_is_predefined(datatype)) {
         if (NULL != datatype->desc.desc) {
+            printf("Destroyed datatype descriptor: %p\n", (void *) datatype->desc.desc);
             free(datatype->desc.desc);
             datatype->desc.length = 0;
             datatype->desc.used = 0;
@@ -118,5 +120,6 @@ int32_t opal_datatype_create_desc(opal_datatype_t *datatype, int32_t expectedSiz
     if (NULL == datatype->desc.desc) {
         return OPAL_ERR_OUT_OF_RESOURCE;
     }
+    printf("Allocated datatype descriptor: %p size: %zu\n", (void *) datatype->desc.desc, datatype->desc.length * sizeof(dt_elem_desc_t));
     return OPAL_SUCCESS;
 }

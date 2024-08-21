@@ -815,6 +815,7 @@ ompi_coll_base_allgatherv_intra_basic_default(const void *sbuf, size_t scount,
         tmp_disps[i] = ompi_disp_array_get(disps, i);
     }
     err = ompi_datatype_create_indexed(size,tmp_rcounts,tmp_disps,rdtype,&newtype);
+    printf("Created datatype descriptor: %p\n", (void *) newtype->super.desc.desc);
     free(tmp_rcounts);
     free(tmp_disps);
     if (MPI_SUCCESS != err) {
